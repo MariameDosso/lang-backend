@@ -8,7 +8,15 @@ app.use(cors()); // Autorise ton app Flutter Web à appeler ce serveur
 
 app.post('/ask-ia', async (req, res) => {
     try {
-        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', req.body, {
+        const userMessage = req.body.message; // On récupère le message envoyé par Flutter
+
+        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+            model: "llama-3.1-8b-instant", // On précise le modèle ici
+            messages: [
+                { role: "system", content: "Tu es un assistant traducteur pour la langue Dida." },
+                { role: "user", content: userMessage }
+            ]
+        }, {
             headers: {
                 'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
                 'Content-Type': 'application/json'
@@ -16,7 +24,8 @@ app.post('/ask-ia', async (req, res) => {
         });
         res.json(response.data);
     } catch (error) {
-        console.error("Erreur Groq:", error.response ? error.response.data : error.message);
+        // Regarde tes logs Render, tu verras ce message s'afficher !
+        console.error("Erreur détaillée Groq:", error.response ? error.response.data : error.message);
         res.status(500).json({ error: "L'IA a eu un petit souci technique." });
     }
 });
