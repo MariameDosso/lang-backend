@@ -14,8 +14,8 @@ app.post('/ask-ia', async (req, res) => {
     try {
         const userMessage = req.body.message;
         
-        // Utilisation du modèle gemini-1.5-flash
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Utilisation du modèle gemini-1.5-flashgemini-2.5-pro
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
         // Appel à l'IA
         const result = await model.generateContent(userMessage);
