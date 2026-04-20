@@ -1,32 +1,33 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
+// Import de la bibliothèque Google Gemini
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // Autorise ton app Flutter Web à appeler ce serveur
+app.use(cors());
+
+// Initialisation de Gemini
+// Assure-toi que GEMINI_API_KEY est bien configuré sur Render
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post('/ask-ia', async (req, res) => {
     try {
-        const userMessage = req.body.message; // On récupère le message envoyé par Flutter
+        const userMessage = req.body.message;
+        
+        // On choisit le modèle 'gemini-1.5-flash' (très rapide et gratuit)
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
-            model: "llama-3.1-8b-instant", // On précise le modèle ici
-            messages: [
-                { role: "system", content: "Tu es un assistant traducteur pour la langue Dida." },
-                { role: "user", content: userMessage }
-            ]
-        }, {
-            headers: {
-                'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        res.json(response.data);
+        // Appel à l'IA
+        const result = await model.generateContent(userMessage);
+        const responseText = result.response.text();
+
+        // On renvoie la réponse au format JSON attendu par ton app Flutter
+        res.json({ response: responseText });
+
     } catch (error) {
-        // Regarde tes logs Render, tu verras ce message s'afficher !
-        console.error("Erreur détaillée Groq:", error.response ? error.response.data : error.message);
-        res.status(500).json({ error: "L'IA a eu un petit souci technique." });
+        console.error("Erreur Gemini:", error);
+        res.status(500).json({ error: "L'IA a eu un souci technique." });
     }
 });
 
