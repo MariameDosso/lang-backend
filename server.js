@@ -16,7 +16,7 @@ app.post('/ask-ia', async (req, res) => {
         const userMessage = req.body.message;
         
         // On choisit le modèle 'gemini-1.5-flash' (très rapide et gratuit)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
         // Appel à l'IA
         const result = await model.generateContent(userMessage);
