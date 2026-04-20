@@ -1,35 +1,48 @@
-const express = require('express');
-const cors = require('cors');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// server.js
+import express from 'express';
+import { GoogleGenAI } from '@google/genai';   // ← Nouveau import
 
 const app = express();
 app.use(express.json());
-app.use(cors());
 
-// Initialisation de l'API Gemini
-// Assure-toi que la variable GEMINI_API_KEY est bien configurée sur Render
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-app.post('/ask-ia', async (req, res) => {
-    try {
-        const userMessage = req.body.message;
-        
-        // Utilisation du modèle gemini-1.5-flashgemini-2.5-pro
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
-
-        // Appel à l'IA
-        const result = await model.generateContent(userMessage);
-        const response = await result.response;
-        const text = response.text();
-
-        // Renvoi de la réponse
-        res.json({ response: text });
-
-    } catch (error) {
-        console.error("Erreur détaillée:", error);
-        res.status(500).json({ error: "Erreur serveur" });
-    }
+const genAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,   // Assure-toi que cette variable est bien dans Render
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Serveur prêt sur le port ${PORT}`));
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",           // Meilleur choix actuel (rapide + bon)
+  // model: "gemini-2.5-pro",          // Si tu veux plus de qualité (un peu plus cher)
+});
+
+app.post('/ask-ia', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: "Le champ 'message' est obligatoire" });
+    }
+
+    const result = await model.generateContent(message);
+
+    // Extraction de la réponse (nouveau SDK)
+    const responseText = result.text();   // ou result.response.text() selon la version exacte
+
+    res.json({
+      success: true,
+      reply: responseText
+    });
+
+  } catch (error) {
+    console.error("Erreur Gemini :", error);
+    res.status(500).json({
+      success: false,
+      error: "Erreur lors de la génération de réponse",
+      details: error.message
+    });
+  }
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Serveur démarré sur le port ${PORT}`);
+});
