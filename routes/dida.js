@@ -6,7 +6,7 @@ import multer from 'multer';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
-const PYTHON_API = 'http://localhost:8000';
+const PYTHON_API = 'https://Mariame16-dida-api.hf.space'; 
 
 // 🔊 TTS — Texte Dida → Audio
 router.post('/tts', async (req, res) => {

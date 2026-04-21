@@ -1,3 +1,5 @@
+import os
+os.environ["TRANSFORMERS_CACHE"] = "/tmp/huggingface"
 from fastapi import FastAPI, UploadFile
 from fastapi.responses import JSONResponse
 from transformers import (
