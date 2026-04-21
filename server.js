@@ -2,11 +2,12 @@
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenAI } from '@google/genai';
+import didaRoutes from './routes/dida.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use('/api/dida', didaRoutes);
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY
 });
