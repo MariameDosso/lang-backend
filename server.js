@@ -71,6 +71,38 @@ app.post('/ask-ia', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
+// Générateur de vocabulaire Dida via Gemini
+app.post('/generate-vocabulary', async (req, res) => {
+  try {
+    const { theme } = req.body;
+    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    const prompt = `Tu es un expert en langue Dida Yocoboué (code ISO: gud), 
+    langue Kru de Côte d'Ivoire parlée à Guitry et Divo.
+    
+    Génère un vocabulaire de 10 mots en Dida Yocoboué sur le thème: "${theme}".
+    
+    Réponds UNIQUEMENT en JSON valide, sans markdown, sans explication:
+    {
+      "mots": [
+        {
+          "fr": "mot en français",
+          "loc": "mot en Dida Yocoboué",
+          "phrase": "exemple de phrase en Dida"
+        }
+      ]
+    }`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const clean = text.replace(/```json|```/g, '').trim();
+    const data = JSON.parse(clean);
+    
+    res.json({ success: true, theme, ...data });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Langivoire Assistant démarré sur le port ${PORT}`);
 });
